@@ -1,6 +1,6 @@
 // Created by Christopher Alton
-// Version 3.0
-// Updated 11-26-2024
+// Version 2.0
+// Updated 09-24-2026
 package supportPlaywright;
 
 //****** These are the JAVA dependencies required to run this test ******
@@ -61,7 +61,7 @@ public class edgeWebTest {
 			String testName = "perfecto-Playwright-Edge";
 			String jobname = "perfecto-Playwright";
 			String projectName = "perfecto-Playwright";
-			String projectversion = "1.0";
+			String projectversion = "2.0";
 			
 			Playwright playwright = Playwright.create();
 	            JsonObject capabilities = new JsonObject();
