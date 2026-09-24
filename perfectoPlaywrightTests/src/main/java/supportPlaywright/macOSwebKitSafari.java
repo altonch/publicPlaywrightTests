@@ -1,6 +1,6 @@
 // Created by Christopher Alton
-// Version 1.0
-// Updated 08-26-2025
+// Version 2.0
+// Updated 09-24-2026
 package supportPlaywright;
 
 //****** These are the JAVA dependencies required to run this test ******
@@ -28,27 +28,27 @@ import com.google.gson.Gson;
 // ****** This is the feature file that contains ******
 // ****** all my cloud URL's and security tokens ******
 import myUtilities.logins;
+import myUtilities.perfectoReportHelperV1;
 
 public class macOSwebKitSafari {
 
-//****** These are the strings that control the browser details ******
-//****** We need to set the browserVersion to one we currently support ******
-//****** We need to set the browserLocation to one of the data centers ******
-//****** Valid Locations: (US East), (EU Frankfurt),  (AP Sydney) ******
-//****** These are North America, Germany and Australia respectively ******
-	
-	private static String browserVersion = "16";
-	private static String browserLocation = "NA-US-BOS";
+	//****** These are the strings that control the test details ******
+	//****** Set the host value to your cloud short name ******
+	//****** We need to set the browserVersion to one we currently support ******
+	//****** We need to set the browserLocation to one of the data centers ******
+	//****** Valid Locations: (US East), (EU Frankfurt),  (AP Sydney) ******
+	//****** These are North America, Germany and Australia respectively ******
+		
+		private static String host = "testing";
+		private static String browserVersion = "16";
+		private static String browserLocation = "NA-US-BOS";
 
 	    public static void main(String[] args) throws MalformedURLException, IOException {
-
-			logins login = new logins();    	
-	    	String host = login.testcloud;
-	    	String myToken = login.testcloudst;
-	    	
+   	
 	    	String myWUT = "https://the-internet.herokuapp.com/login";
 	    	String google = "https://www.google.com";
-	    	
+			String myToken = logins.getToken(host);
+			
 			String userPath = "//*[@id=\"username\"]";
 			String passPath = "//*[@id=\"password\"]";
 			String loginButton = "//*[@class=\"radius\"]";
@@ -60,6 +60,7 @@ public class macOSwebKitSafari {
 			String secureArea = "//*[text()=\" Secure Area\"]";
 
 			String testName = "perfecto-Playwright-webkitSafari";
+			String jobname = "perfecto-Playwright";
 			String projectName = "support-Playwright-macOS";
 			String projectversion = "1.0";
 			
@@ -73,7 +74,7 @@ public class macOSwebKitSafari {
 	            capabilities.addProperty("securityToken", myToken);
 
 	            String caps = URLEncoder.encode(capabilities.toString(), "utf-8");
-	            String hostUrl = "wss://" + host + "/websocket?" + caps;
+	            String hostUrl = "wss://" + host + ".perfectomobile.com/websocket?" + caps;
 	            Browser browser = playwright.webkit().connect(hostUrl);
 
 	            System.out.println("Starting Playwright Test");
@@ -85,7 +86,7 @@ public class macOSwebKitSafari {
 	            //tags
 	            paramsTestStart.put("tags", List.of("playwright", "support"));         
 	            //job
-	            paramsTestStart.put("jobName","perfecto-Playwright-webkitSafari");
+	            paramsTestStart.put("jobName", jobname);
 	            paramsTestStart.put("jobBranch", "perfecto-sampleCode");
 	            paramsTestStart.put("jobNumber", 1);         
 	            //project
@@ -175,9 +176,11 @@ public class macOSwebKitSafari {
 				paramsTestStop.put("success", false);
 				paramsTestStop.put("failureDescription", "Review Test");			                    
 				page.evaluate("perfecto:report:testEnd", new Gson().toJson(paramsTestStop));
-	        }
-	        
-	        
-		    System.out.println("Playwright Test Complete");
-	    }
-}
+
+	    } finally {
+		    	browser.close();
+		    	
+		    	String reportUrl = perfectoReportHelperV1.getLatestReportUrl(host, jobname, myToken);
+		    	System.out.println("Report Link\r" + reportUrl);
+		    }
+	}}

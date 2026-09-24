@@ -1,6 +1,6 @@
 // Created by Christopher Alton
-// Version 1.0
-// Updated 08-26-2025
+// Version 2.0
+// Updated 09-24-2026
 package supportPlaywright;
 
 //****** These are the JAVA dependencies required to run this test ******
@@ -31,24 +31,24 @@ import myUtilities.logins;
 
 public class macOSchromeWebTest {
 
-//****** These are the strings that control the browser details ******
+//****** These are the strings that control the test details ******
+//****** Set the host value to your cloud short name ******
 //****** We need to set the browserVersion to one we currently support ******
 //****** We need to set the browserLocation to one of the data centers ******
-//****** Valid Locations: (US East), (EU Frankfurt),  (AP Sydney) ******
+//****** Valid Locations: (NA-US-BOS), (NA-CA-YYZ),  (EU-DE-FRA) ******
 //****** These are North America, Germany and Australia respectively ******
 	
-	private static String browserVersion = "144";
+	private static String host = "testing";
+	private static String platformVersion = "macOS Tahoe";
+	private static String browserVersion = "149";
 	private static String browserLocation = "NA-US-BOS";
 
 	    public static void main(String[] args) throws MalformedURLException, IOException {
-
-			logins login = new logins();    	
-	    	String host = login.testcloud;
-	    	String myToken = login.testcloudst;
 	    	
 	    	String myWUT = "https://the-internet.herokuapp.com/login";
 	    	String google = "https://www.google.com";
-	    	
+			String myToken = logins.getToken(host);	
+			
 			String userPath = "//*[@id=\"username\"]";
 			String passPath = "//*[@id=\"password\"]";
 			String loginButton = "//*[@class=\"radius\"]";
@@ -61,19 +61,19 @@ public class macOSchromeWebTest {
 
 			String testName = "perfecto-Playwright-Chrome";
 			String projectName = "perfecto-Playwright-macOS";
-			String projectversion = "1.0";
+			String projectversion = "2.0";
 			
 			Playwright playwright = Playwright.create();
 	            JsonObject capabilities = new JsonObject();
+	            capabilities.addProperty("platformName", "Mac");
+	            capabilities.addProperty("platformVersion", platformVersion);
 	            capabilities.addProperty("browserName", "Chrome");
 	            capabilities.addProperty("browserVersion", browserVersion);
 	            capabilities.addProperty("location", browserLocation);
-	            capabilities.addProperty("platformName", "Mac");
-	            capabilities.addProperty("platformVersion", "macOS Ventura");
 	            capabilities.addProperty("securityToken", myToken);
 
 	            String caps = URLEncoder.encode(capabilities.toString(), "utf-8");
-	            String hostUrl = "wss://" + host + "/websocket?" + caps;
+	            String hostUrl = "wss://" + host + ".perfectomobile.com/websocket?" + caps;
 	            Browser browser = playwright.chromium().connect(hostUrl);
 
 	            System.out.println("Starting Playwright Test");

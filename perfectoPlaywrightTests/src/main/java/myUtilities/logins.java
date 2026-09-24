@@ -1,9 +1,13 @@
 package myUtilities;
 
+import java.util.Map;
+
 public class logins {
 
-// Cloud name and security token
-public String testcloud = "testcloud.perfectomobile.com";
-public String testcloudst = "xxx";
-
+	private static final Map<String, String> TOKENS = Map.ofEntries(
+			Map.entry("testing", "abcd1234")
+			);
+	public static String getToken(String host) {
+		return TOKENS.get(host);
+	}
 }

@@ -7,15 +7,15 @@ package supportPlaywright;
 //****** Without these, the test will be unable to run ******
 //****** as these tell the test how to handle the assorted timeouts and ******
 //****** the protocols to access the cloud for automation ******
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URLEncoder;
+import java.net.*;
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 // Playwright Dependencies to actually run Playwright Tests
 import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.BrowserContext;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
@@ -23,32 +23,32 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 
 // Google GSON Dependencies for Perfecto Reportium Support
 import com.google.gson.JsonObject;
-import com.google.gson.Gson;
+import com.google.gson.*;
 
-// ****** This is the feature file that contains ******
-// ****** all my cloud URL's and security tokens ******
+// ****** These are my dependencies that handle my log ins, cloud names ******
+// ****** as well as my reporting utilities ******
 import myUtilities.logins;
+import myUtilities.perfectoReportHelperV1;
 
 public class chromeWebTest {
 
-//****** These are the strings that control the browser details ******
+//****** These are the strings that control the test details ******
+//****** Set the host value to your cloud short name ******
 //****** We need to set the browserVersion to one we currently support ******
 //****** We need to set the browserLocation to one of the data centers ******
 //****** Valid Locations: (US East), (EU Frankfurt),  (AP Sydney) ******
 //****** These are North America, Germany and Australia respectively ******
 	
-	private static String browserVersion = "latest";
-	private static String browserLocation = "EU Frankfurt";
+	private static String host = "testing";
+	private static String browserVersion = "152";
+	private static String browserLocation = "US East";
 
 	    public static void main(String[] args) throws MalformedURLException, IOException {
-
-			logins login = new logins();    	
-	    	String host = login.testcloud;
-	    	String myToken = login.testcloudst;
 	    	
 	    	String myWUT = "https://the-internet.herokuapp.com/login";
 	    	String google = "https://www.google.com";
-	    	
+			String myToken = logins.getToken(host);	
+			
 			String userPath = "//*[@id=\"username\"]";
 			String passPath = "//*[@id=\"password\"]";
 			String loginButton = "//*[@class=\"radius\"]";
@@ -60,6 +60,7 @@ public class chromeWebTest {
 			String secureArea = "//*[text()=\" Secure Area\"]";
 
 			String testName = "perfecto-Playwright-Chrome";
+			String jobname = "perfecto-Playwright";
 			String projectName = "perfecto-Playwright";
 			String projectversion = "1.0";
 			
@@ -68,16 +69,26 @@ public class chromeWebTest {
 	            capabilities.addProperty("browserName", "Chrome");
 	            capabilities.addProperty("browserVersion", browserVersion);
 	            capabilities.addProperty("location", browserLocation);
+	            capabilities.addProperty("resolution", "1920x1080");
 	            capabilities.addProperty("platformName", "Windows");
 	            capabilities.addProperty("platformVersion", "11");
 	            capabilities.addProperty("securityToken", myToken);
 
 	            String caps = URLEncoder.encode(capabilities.toString(), "utf-8");
-	            String hostUrl = "wss://" + host + "/websocket?" + caps;
+	            String hostUrl = "wss://" + host + ".perfectomobile.com/websocket?" + caps;
 	            Browser browser = playwright.chromium().connect(hostUrl);
 
 	            System.out.println("Starting Playwright Test");
-	            Page page = browser.newPage(); 
+	            
+
+	            BrowserContext context = browser.newContext(
+	            		new Browser.NewContextOptions()
+	            		.setViewportSize(null)
+	            		);      
+	            
+//	            Page page = browser.newPage();
+	            Page page = context.newPage();	
+	            
 		        try { 
 	          //test start
 	            Map<String, Object> paramsTestStart = new HashMap<>();
@@ -85,13 +96,13 @@ public class chromeWebTest {
 	            //tags
 	            paramsTestStart.put("tags", List.of("playwright", "support"));         
 	            //job
-	            paramsTestStart.put("jobName","perfecto-Playwright");
+	            paramsTestStart.put("jobName",jobname);
 	            paramsTestStart.put("jobBranch", "perfecto-sampleCode");
 	            paramsTestStart.put("jobNumber", 1);         
 	            //project
 	            paramsTestStart.put("projectName", projectName);
 	            paramsTestStart.put("projectVersion", projectversion);
-
+	            
 	            page.evaluate("perfecto:report:testStart", new Gson().toJson(paramsTestStart));
 	            
 	            Map<String, Object> paramsStepStart = new HashMap<>();
@@ -161,12 +172,10 @@ public class chromeWebTest {
 				
 				//test stop
 				Map<String, Object> paramsTestStop = new HashMap<>();
-				paramsTestStop.put("success", true);
-//				paramsTestStop.put("failureDescription", "My failure message");
-				                    
+				paramsTestStop.put("success", true);			                    
 				page.evaluate("perfecto:report:testEnd", new Gson().toJson(paramsTestStop));
+				System.out.println(paramsTestStop);
 				
-	            browser.close();
 	        } catch (Exception exception) {
 	            exception.printStackTrace();
 				System.err.println(exception.getMessage());
@@ -175,9 +184,17 @@ public class chromeWebTest {
 				paramsTestStop.put("success", false);
 				paramsTestStop.put("failureDescription", "Review Test");			                    
 				page.evaluate("perfecto:report:testEnd", new Gson().toJson(paramsTestStop));
-	        }
-	        
-	        
-		    System.out.println("Playwright Test Complete");
+				System.out.println(paramsTestStop);
+	        	
+	    } finally {
+	    	browser.close();
+    	
+// ****** This code calls the executionId parameter ******
+// ****** and will generate and print the execution report URL ******
+	    
+	    	browser.close();
+	    	
+	    	String reportUrl = perfectoReportHelperV1.getLatestReportUrl(host, jobname, myToken);
+	    	System.out.println("Report Link\r\n" + reportUrl);
 	    }
-}
+}}
