@@ -15,9 +15,11 @@ Map.entry("testing", "abcd1234")
 
 These are the strings that control the test details. <br>
 Set the host value to your cloud short name. <br>
-	private static String host = "testing";
-  
-We need to set the browserVersion to one we currently support. <br>
+```
+private static String host = "testing";
+```  
+We need to set the browserVersion to one we currently support.<br>
+Example: 150 <br>
 ```
 private static String browserVersion = "150";
 ```
@@ -28,3 +30,4 @@ These are North America, Germany and Australia respectively. <br>
 ```
 private static String browserLocation = "EU Frankfurt";
 ```
+Note: These tests are provided AS IS. Support is not included with these test samples. <br>
